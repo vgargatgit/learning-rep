@@ -33,6 +33,18 @@
       ]
     },
     {
+      id:"training-reshapes-space",
+      kicker:"Part 3 · Learning",
+      title:"How training reshapes the space",
+      summary:"Follow one error backward, update both layers, and watch the hidden point and the output decision line move together.",
+      lesson:"../lessons/00c-how-training-reshapes-space.md",
+      visual:"learning",
+      takes:[
+        "Hidden layers reshape the space; the output layer draws the line.",
+        "Backpropagation computes responsibility; gradient descent uses it to move the point and redraw the line."
+      ]
+    },
+    {
       id:"big-idea", kicker:"The problem", title:"The big idea",
       summary:"Why hidden units need a learning signal and how reverse differentiation supplies it.",
       lesson:"../lessons/01-big-idea.md", image:"../assets/drafts/page-01-overview.png",
@@ -117,7 +129,7 @@
   }
 
   function hero() {
-    return `<section id="home" class="hero"><div class="eyebrow">An illustrated companion to the 1986 paper</div><h1>Learning representations, from features to gradients.</h1><p class="lead">Start with how one real-world example becomes numbers. Then see how a hidden layer redraws those numbers into a new feature space before learning how gradients shape that transformation.</p><div class="pills"><span>Features first</span><span>Representation explorer</span><span>Plain Python + PyTorch</span><span>Interactive gradient lab</span></div></section>`;
+    return `<section id="home" class="hero"><div class="eyebrow">An illustrated companion to the 1986 paper</div><h1>Learning representations, from features to gradients.</h1><p class="lead">Start with how one example becomes numbers. See a hidden layer redraw those numbers into a new feature space, then watch backpropagation reshape that space while the output layer redraws its decision line.</p><div class="pills"><span>Features first</span><span>Representation explorer</span><span>Training-step visualiser</span><span>Plain Python + PyTorch</span></div></section>`;
   }
 
   function dataVisual() {
@@ -137,13 +149,11 @@
         <span class="arrow">→</span>
         <div class="representation-box hidden-box"><span class="box-label">Hidden representation</span><strong id="rep-vector">h = [0.52498, 0.74077]</strong><small>Coordinates are hidden activations.</small></div>
       </div>
-
       <div class="rep-lab">
         <div><span class="kicker">Interactive forward transformation</span><h3>Move the input; watch the representation move</h3><p>The weights stay fixed. Changing the input changes both hidden coordinates.</p></div>
         <div class="rep-controls"><label>Input x₁<input id="rep-x1" type="number" step="0.1" value="1"></label><label>Input x₂<input id="rep-x2" type="number" step="0.1" value="2"></label></div>
         <div class="rep-results"><div><span>z₁</span><strong id="rep-z1">0.100000</strong></div><div><span>h₁ = σ(z₁)</span><strong id="rep-h1">0.524979</strong></div><div><span>z₂</span><strong id="rep-z2">1.050000</strong></div><div><span>h₂ = σ(z₂)</span><strong id="rep-h2">0.740775</strong></div></div>
       </div>
-
       <div class="space-comparison">
         <div class="space-panel"><span class="box-label">Input feature space</span><h3>Classes can be tangled</h3><div class="mini-plot"><span class="axis axis-x">x₁</span><span class="axis axis-y">x₂</span>${plotPoint("zero","point-lb","0")}${plotPoint("one","point-lt","1")}${plotPoint("one","point-rb","1")}${plotPoint("zero","point-rt","0")}</div><small>No single straight boundary separates this XOR-like arrangement.</small></div>
         <span class="space-arrow">representation<br>transformation →</span>
@@ -151,6 +161,61 @@
       </div>
       <p class="visual-note">The calculator above uses the displayed fixed weights and exact sigmoid values. The class-separation sketch is conceptual: training must learn a useful transformation rather than receiving it in advance.</p>
       <div class="definition-grid four"><div class="definition"><b>Hidden unit</b><span>One neuron that computes one new coordinate.</span></div><div class="definition"><b>Hidden feature</b><span>One activation such as h₁.</span></div><div class="definition"><b>Hidden representation</b><span>The complete activation vector h.</span></div><div class="definition"><b>Feature space</b><span>The coordinate system in which examples are located.</span></div></div>
+    </div>`;
+  }
+
+  function learningVisual() {
+    return `<div class="learning-story" aria-label="Backpropagation moves a hidden point and redraws the decision line">
+      <div class="motif-strip">
+        <div class="motif-card"><span>1</span><strong>Hidden layer</strong><small>Reshapes the space</small></div>
+        <span class="motif-arrow">→</span>
+        <div class="motif-card"><span>2</span><strong>Output layer</strong><small>Draws the line</small></div>
+        <span class="motif-arrow">→</span>
+        <div class="motif-card"><span>3</span><strong>Loss</strong><small>Measures the mistake</small></div>
+        <span class="motif-arrow backward">←</span>
+        <div class="motif-card accent"><span>4</span><strong>Backpropagation</strong><small>Assigns responsibility</small></div>
+      </div>
+
+      <div class="training-board">
+        <div class="training-copy">
+          <span class="box-label">One-example training explorer</span>
+          <h3>Move the point and redraw the line</h3>
+          <p>For <code>x = [1, 2]</code> and target <code>y = 1</code>, each click performs a real forward pass, backward pass, and gradient-descent update.</p>
+          <div class="training-actions"><button id="train-step-button" class="primary compact" type="button">Apply one gradient step</button><button id="train-reset-button" class="secondary" type="button">Reset</button></div>
+          <div class="training-metrics">
+            <div><span>Update</span><strong id="train-step">0</strong></div>
+            <div><span>Hidden point h</span><strong id="train-hidden">[0.52498, 0.74077]</strong></div>
+            <div><span>Prediction p</span><strong id="train-prediction">0.506379</strong></div>
+            <div><span>Loss L</span><strong id="train-loss">0.680469</strong></div>
+          </div>
+          <div class="line-equation"><span>Decision line</span><code id="train-line-equation">0.800h₁ − 0.600h₂ + 0.050 = 0</code></div>
+          <p id="train-message" class="training-message">The initial prediction is uncertain. The hidden point sits close to the output line.</p>
+        </div>
+
+        <div class="training-plot-card">
+          <span class="box-label">Hidden feature space</span>
+          <svg id="training-space" class="training-space" viewBox="0 0 100 100" role="img" aria-label="Hidden point and output decision line">
+            <rect x="10" y="10" width="80" height="80" rx="2" class="plot-bg"></rect>
+            <line x1="10" y1="90" x2="92" y2="90" class="plot-axis"></line>
+            <line x1="10" y1="92" x2="10" y2="8" class="plot-axis"></line>
+            <text x="87" y="97" class="svg-label">h₁</text>
+            <text x="2" y="13" class="svg-label">h₂</text>
+            <line id="train-decision-line" x1="10" y1="83.33" x2="65" y2="10" class="train-decision-line"></line>
+            <line id="train-motion" x1="52" y1="30.7" x2="52" y2="30.7" class="train-motion"></line>
+            <circle id="train-old-point" cx="52" cy="30.7" r="3.4" class="train-old-point"></circle>
+            <circle id="train-point" cx="52" cy="30.7" r="4.4" class="train-point"></circle>
+            <text id="train-point-label" x="57" y="28" class="svg-point-label">h⁰</text>
+          </svg>
+          <div class="plot-legend"><span><i class="legend-current"></i>current hidden point</span><span><i class="legend-old"></i>previous position</span><span><i class="legend-line"></i>output line</span></div>
+        </div>
+      </div>
+
+      <div class="gradient-story">
+        <div><span class="phase forward">Forward</span><strong>x → h → line score → prediction → loss</strong></div>
+        <div><span class="phase backward">Backward</span><strong>loss → output gradients → hidden gradients</strong></div>
+        <div><span class="phase update">Update</span><strong>reshape the hidden space + redraw the line</strong></div>
+      </div>
+      <p class="visual-note">This explorer trains on one example to expose the mechanics. A useful representation emerges only when shared parameters are trained across many examples.</p>
     </div>`;
   }
 
@@ -162,10 +227,11 @@
       const response=await fetch(chapter.lesson,{cache:"no-cache"});
       const text=response.ok?await response.text():"## Lesson text unavailable\nThe Markdown source could not be loaded.";
       nav.insertAdjacentHTML("beforeend",`<a href="#${chapter.id}"><span class="n">${i+1}</span>${chapter.title}</a>`);
-      const visual=chapter.visual==="data"?dataVisual():chapter.visual==="representation"?representationVisual():(chapter.image?`<img src="${chapter.image}" alt="Illustrated ${chapter.title}">`:"");
+      const visual=chapter.visual==="data"?dataVisual():chapter.visual==="representation"?representationVisual():chapter.visual==="learning"?learningVisual():(chapter.image?`<img src="${chapter.image}" alt="Illustrated ${chapter.title}">`:"");
       main.insertAdjacentHTML("beforeend",`<article id="${chapter.id}" class="chapter"><div class="heading"><span class="num">${i+1}</span><div><span class="kicker">${chapter.kicker}</span><h2>${chapter.title}</h2><p class="summary">${chapter.summary}</p></div></div>${visual}<div class="copy">${md(text)}</div><div class="takeaways">${chapter.takes.map(x=>`<div>${x}</div>`).join("")}</div></article>`);
     }
     wireRepresentationLab();
+    wireTrainingLab();
     main.insertAdjacentHTML("beforeend",lab());
     wireLab();
   }
@@ -186,6 +252,79 @@
     };
     [x1Input,x2Input].forEach(input=>input.addEventListener("input",calculate));
     calculate();
+  }
+
+  function wireTrainingLab() {
+    const stepButton=$("train-step-button"), resetButton=$("train-reset-button");
+    if(!stepButton||!resetButton) return;
+    const initial=()=>({
+      W:[[.50,-.25],[.25,.50]], b:[.10,-.20], v:[.80,-.60], c:.05,
+      iteration:0, previousHidden:null
+    });
+    let state=initial();
+    const x=[1,2], target=1, learningRate=.5;
+    const sigmoid=value=>1/(1+Math.exp(-value));
+    const forward=current=>{
+      const z=current.W.map((row,index)=>row[0]*x[0]+row[1]*x[1]+current.b[index]);
+      const h=z.map(sigmoid);
+      const score=current.v[0]*h[0]+current.v[1]*h[1]+current.c;
+      const prediction=sigmoid(score);
+      const loss=-(target*Math.log(prediction)+(1-target)*Math.log(1-prediction));
+      return {z,h,score,prediction,loss};
+    };
+    const mapPoint=h=>({x:10+80*h[0],y:90-80*h[1]});
+    const boundaryPoints=current=>{
+      const [a,b]=current.v,c=current.c,candidates=[];
+      const add=(xValue,yValue)=>{
+        if(Number.isFinite(xValue)&&Number.isFinite(yValue)&&xValue>=0&&xValue<=1&&yValue>=0&&yValue<=1){
+          if(!candidates.some(point=>Math.abs(point[0]-xValue)<1e-9&&Math.abs(point[1]-yValue)<1e-9)) candidates.push([xValue,yValue]);
+        }
+      };
+      if(Math.abs(b)>1e-12){add(0,-c/b);add(1,-(a+c)/b);}
+      if(Math.abs(a)>1e-12){add(-c/a,0);add(-(b+c)/a,1);}
+      return candidates.slice(0,2).map(([xValue,yValue])=>mapPoint([xValue,yValue]));
+    };
+    const signed=(value,digits=3)=>`${value>=0?"+ ":"− "}${Math.abs(value).toFixed(digits)}`;
+    const renderTraining=message=>{
+      const current=forward(state), point=mapPoint(current.h), old=state.previousHidden?mapPoint(state.previousHidden):point;
+      $("train-step").textContent=String(state.iteration);
+      $("train-hidden").textContent=`[${current.h[0].toFixed(5)}, ${current.h[1].toFixed(5)}]`;
+      $("train-prediction").textContent=current.prediction.toFixed(6);
+      $("train-loss").textContent=current.loss.toFixed(6);
+      $("train-line-equation").textContent=`${state.v[0].toFixed(3)}h₁ ${signed(state.v[1])}h₂ ${signed(state.c)} = 0`;
+      $("train-message").textContent=message;
+      const pointElement=$("train-point"), oldElement=$("train-old-point"), motion=$("train-motion"), label=$("train-point-label");
+      pointElement.setAttribute("cx",point.x.toFixed(2));pointElement.setAttribute("cy",point.y.toFixed(2));
+      oldElement.setAttribute("cx",old.x.toFixed(2));oldElement.setAttribute("cy",old.y.toFixed(2));
+      oldElement.classList.toggle("is-visible",Boolean(state.previousHidden));
+      motion.setAttribute("x1",old.x.toFixed(2));motion.setAttribute("y1",old.y.toFixed(2));motion.setAttribute("x2",point.x.toFixed(2));motion.setAttribute("y2",point.y.toFixed(2));
+      motion.classList.toggle("is-visible",Boolean(state.previousHidden));
+      label.setAttribute("x",Math.min(point.x+5,88).toFixed(2));label.setAttribute("y",Math.max(point.y-4,8).toFixed(2));label.textContent=`h${state.iteration}`;
+      const endpoints=boundaryPoints(state), line=$("train-decision-line");
+      if(endpoints.length===2){
+        line.hidden=false;
+        line.setAttribute("x1",endpoints[0].x.toFixed(2));line.setAttribute("y1",endpoints[0].y.toFixed(2));line.setAttribute("x2",endpoints[1].x.toFixed(2));line.setAttribute("y2",endpoints[1].y.toFixed(2));
+      } else line.hidden=true;
+      return current;
+    };
+    const applyStep=()=>{
+      const before=forward(state), oldV=[...state.v];
+      const outputDelta=before.prediction-target;
+      const outputGradients=before.h.map(activation=>outputDelta*activation);
+      const hiddenActivationGradients=oldV.map(weight=>outputDelta*weight);
+      const hiddenDeltas=hiddenActivationGradients.map((gradient,index)=>gradient*before.h[index]*(1-before.h[index]));
+      state.previousHidden=[...before.h];
+      state.W=state.W.map((row,rowIndex)=>row.map((weight,columnIndex)=>weight-learningRate*hiddenDeltas[rowIndex]*x[columnIndex]));
+      state.b=state.b.map((bias,index)=>bias-learningRate*hiddenDeltas[index]);
+      state.v=state.v.map((weight,index)=>weight-learningRate*outputGradients[index]);
+      state.c-=learningRate*outputDelta;
+      state.iteration+=1;
+      const after=renderTraining("");
+      $("train-message").textContent=`The loss fell from ${before.loss.toFixed(5)} to ${after.loss.toFixed(5)}. The hidden point moved and the output line was redrawn.`;
+    };
+    stepButton.addEventListener("click",applyStep);
+    resetButton.addEventListener("click",()=>{state=initial();renderTraining("The initial prediction is uncertain. The hidden point sits close to the output line.");});
+    renderTraining("The initial prediction is uncertain. The hidden point sits close to the output line.");
   }
 
   function lab() {
