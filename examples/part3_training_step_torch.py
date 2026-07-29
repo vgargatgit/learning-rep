@@ -1,4 +1,4 @@
-"""The Part 3 training step expressed with PyTorch autograd."""
+"""A dense 2 -> 2 -> 1 binary classifier using PyTorch autograd."""
 
 from __future__ import annotations
 
@@ -9,8 +9,14 @@ from torch import nn
 class TinyRepresentationClassifier(nn.Module):
     def __init__(self) -> None:
         super().__init__()
-        self.hidden = nn.Linear(2, 2)
-        self.output = nn.Linear(2, 1)
+
+        # Dense rule: each of 2 hidden neurons receives both input coordinates.
+        # Therefore the hidden representation has dimension 2.
+        self.hidden = nn.Linear(in_features=2, out_features=2)
+
+        # The single binary-classification output neuron receives all 2 hidden
+        # coordinates and emits one logit.
+        self.output = nn.Linear(in_features=2, out_features=1)
 
         with torch.no_grad():
             self.hidden.weight.copy_(
@@ -22,6 +28,8 @@ class TinyRepresentationClassifier(nn.Module):
 
     def forward(self, inputs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         hidden_representation = torch.sigmoid(self.hidden(inputs))
+        assert hidden_representation.shape[-1] == self.hidden.out_features
+
         logit = self.output(hidden_representation).squeeze(-1)
         return logit, hidden_representation
 
@@ -30,13 +38,15 @@ def main() -> None:
     inputs = torch.tensor([1.0, 2.0])
     target = torch.tensor(1.0)
     model = TinyRepresentationClassifier()
+
+    # Binary classification: one logit plus binary cross-entropy.
     loss_function = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.5)
 
     with torch.no_grad():
         before_logit, before_hidden = model(inputs)
         before_loss = loss_function(before_logit, target)
-        before_prediction = torch.sigmoid(before_logit)
+        before_probability = torch.sigmoid(before_logit)
 
     optimizer.zero_grad()
     logit, _ = model(inputs)
@@ -47,15 +57,18 @@ def main() -> None:
     with torch.no_grad():
         after_logit, after_hidden = model(inputs)
         after_loss = loss_function(after_logit, target)
-        after_prediction = torch.sigmoid(after_logit)
+        after_probability = torch.sigmoid(after_logit)
 
-    print("Hidden layers reshape the space; the output layer draws the line.")
+    print("Binary classification: hidden layers reshape; output draws the line.")
+    print("input dimension:", inputs.shape[-1])
+    print("hidden neurons / representation dimension:", model.hidden.out_features)
+    print("output logits:", model.output.out_features)
     print("hidden before:", before_hidden)
-    print("prediction before:", before_prediction.item())
-    print("loss before:", before_loss.item())
+    print("class-1 probability before:", before_probability.item())
+    print("BCE loss before:", before_loss.item())
     print("hidden after:", after_hidden)
-    print("prediction after:", after_prediction.item())
-    print("loss after:", after_loss.item())
+    print("class-1 probability after:", after_probability.item())
+    print("BCE loss after:", after_loss.item())
 
 
 if __name__ == "__main__":
