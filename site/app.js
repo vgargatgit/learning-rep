@@ -21,6 +21,18 @@
       ]
     },
     {
+      id:"transform-representations",
+      kicker:"Part 2 · Representations",
+      title:"Networks transform representations",
+      summary:"See how neurons combine input features, hidden layers create new feature vectors, and a task-useful feature space can simplify prediction.",
+      lesson:"../lessons/00b-networks-transform-representations.md",
+      visual:"representation",
+      takes:[
+        "Each hidden activation is one learned feature; the full activation vector is the hidden representation.",
+        "A useful representation makes the task easier for later layers, but usefulness depends on the task."
+      ]
+    },
+    {
       id:"big-idea", kicker:"The problem", title:"The big idea",
       summary:"Why hidden units need a learning signal and how reverse differentiation supplies it.",
       lesson:"../lessons/01-big-idea.md", image:"../assets/drafts/page-01-overview.png",
@@ -105,11 +117,41 @@
   }
 
   function hero() {
-    return `<section id="home" class="hero"><div class="eyebrow">An illustrated companion to the 1986 paper</div><h1>Learning representations, from features to gradients.</h1><p class="lead">Start with how one real-world example becomes numbers. Then build an exact mental model of the forward pass, loss, chain rule, reverse gradient flow, parameter updates, and the internal representations that emerge from training.</p><div class="pills"><span>Features first</span><span>Cartoon memory aids</span><span>Plain Python + PyTorch</span><span>Interactive gradient lab</span></div></section>`;
+    return `<section id="home" class="hero"><div class="eyebrow">An illustrated companion to the 1986 paper</div><h1>Learning representations, from features to gradients.</h1><p class="lead">Start with how one real-world example becomes numbers. Then see how a hidden layer redraws those numbers into a new feature space before learning how gradients shape that transformation.</p><div class="pills"><span>Features first</span><span>Representation explorer</span><span>Plain Python + PyTorch</span><span>Interactive gradient lab</span></div></section>`;
   }
 
   function dataVisual() {
     return `<div class="data-story" aria-label="A house becomes a feature vector and target"><div class="story-flow"><div class="story-card"><span class="icon">🏠</span><strong>One example</strong><small>A single house presented to the model.</small></div><span class="arrow">→</span><div class="story-card"><strong>Three features</strong><div class="feature-stack"><div class="feature-chip"><b>x₁</b><span>120 m² floor area</span></div><div class="feature-chip"><b>x₂</b><span>3 bedrooms</span></div><div class="feature-chip"><b>x₃</b><span>18 years old</span></div></div></div><span class="arrow">→</span><div class="story-card"><strong>Input and target</strong><span class="vector">x = [120, 3, 18]</span><span class="target-badge">y = 1</span><small>1 means “needs renovation”.</small></div></div><div class="definition-grid"><div class="definition"><b>Feature</b><span>One numerical property, such as floor area.</span></div><div class="definition"><b>Feature vector</b><span>The ordered collection of features for one example.</span></div><div class="definition"><b>Representation</b><span>The complete numerical encoding at a particular model stage.</span></div></div></div>`;
+  }
+
+  function plotPoint(kind,position,label) {
+    return `<span class="plot-point ${kind} ${position}" aria-label="class ${label}">${label}</span>`;
+  }
+
+  function representationVisual() {
+    return `<div class="representation-story" aria-label="An input representation transformed into a hidden representation">
+      <div class="transform-flow">
+        <div class="representation-box input-box"><span class="box-label">Input representation</span><strong>x = [x₁, x₂]</strong><small>Coordinates are input features.</small></div>
+        <span class="arrow">→</span>
+        <div class="layer-box"><span class="box-label">Two hidden units</span><div class="unit-card"><b>h₁</b><code>σ(0.50x₁ − 0.25x₂ + 0.10)</code></div><div class="unit-card"><b>h₂</b><code>σ(0.25x₁ + 0.50x₂ − 0.20)</code></div></div>
+        <span class="arrow">→</span>
+        <div class="representation-box hidden-box"><span class="box-label">Hidden representation</span><strong id="rep-vector">h = [0.52498, 0.74077]</strong><small>Coordinates are hidden activations.</small></div>
+      </div>
+
+      <div class="rep-lab">
+        <div><span class="kicker">Interactive forward transformation</span><h3>Move the input; watch the representation move</h3><p>The weights stay fixed. Changing the input changes both hidden coordinates.</p></div>
+        <div class="rep-controls"><label>Input x₁<input id="rep-x1" type="number" step="0.1" value="1"></label><label>Input x₂<input id="rep-x2" type="number" step="0.1" value="2"></label></div>
+        <div class="rep-results"><div><span>z₁</span><strong id="rep-z1">0.100000</strong></div><div><span>h₁ = σ(z₁)</span><strong id="rep-h1">0.524979</strong></div><div><span>z₂</span><strong id="rep-z2">1.050000</strong></div><div><span>h₂ = σ(z₂)</span><strong id="rep-h2">0.740775</strong></div></div>
+      </div>
+
+      <div class="space-comparison">
+        <div class="space-panel"><span class="box-label">Input feature space</span><h3>Classes can be tangled</h3><div class="mini-plot"><span class="axis axis-x">x₁</span><span class="axis axis-y">x₂</span>${plotPoint("zero","point-lb","0")}${plotPoint("one","point-lt","1")}${plotPoint("one","point-rb","1")}${plotPoint("zero","point-rt","0")}</div><small>No single straight boundary separates this XOR-like arrangement.</small></div>
+        <span class="space-arrow">representation<br>transformation →</span>
+        <div class="space-panel"><span class="box-label">Hidden feature space</span><h3>The same classes can become simpler</h3><div class="mini-plot"><span class="axis axis-x">h₁</span><span class="axis axis-y">h₂</span><span class="decision-boundary"></span>${plotPoint("zero","point-hl1","0")}${plotPoint("zero","point-hl2","0")}${plotPoint("one","point-hr1","1")}${plotPoint("one","point-hr2","1")}</div><small>A later output unit can now use a simple boundary.</small></div>
+      </div>
+      <p class="visual-note">The calculator above uses the displayed fixed weights and exact sigmoid values. The class-separation sketch is conceptual: training must learn a useful transformation rather than receiving it in advance.</p>
+      <div class="definition-grid four"><div class="definition"><b>Hidden unit</b><span>One neuron that computes one new coordinate.</span></div><div class="definition"><b>Hidden feature</b><span>One activation such as h₁.</span></div><div class="definition"><b>Hidden representation</b><span>The complete activation vector h.</span></div><div class="definition"><b>Feature space</b><span>The coordinate system in which examples are located.</span></div></div>
+    </div>`;
   }
 
   async function render() {
@@ -120,11 +162,30 @@
       const response=await fetch(chapter.lesson,{cache:"no-cache"});
       const text=response.ok?await response.text():"## Lesson text unavailable\nThe Markdown source could not be loaded.";
       nav.insertAdjacentHTML("beforeend",`<a href="#${chapter.id}"><span class="n">${i+1}</span>${chapter.title}</a>`);
-      const visual=chapter.visual==="data"?dataVisual():(chapter.image?`<img src="${chapter.image}" alt="Illustrated ${chapter.title}">`:"");
+      const visual=chapter.visual==="data"?dataVisual():chapter.visual==="representation"?representationVisual():(chapter.image?`<img src="${chapter.image}" alt="Illustrated ${chapter.title}">`:"");
       main.insertAdjacentHTML("beforeend",`<article id="${chapter.id}" class="chapter"><div class="heading"><span class="num">${i+1}</span><div><span class="kicker">${chapter.kicker}</span><h2>${chapter.title}</h2><p class="summary">${chapter.summary}</p></div></div>${visual}<div class="copy">${md(text)}</div><div class="takeaways">${chapter.takes.map(x=>`<div>${x}</div>`).join("")}</div></article>`);
     }
+    wireRepresentationLab();
     main.insertAdjacentHTML("beforeend",lab());
     wireLab();
+  }
+
+  function wireRepresentationLab() {
+    const x1Input=$("rep-x1"), x2Input=$("rep-x2");
+    if(!x1Input||!x2Input) return;
+    const sigmoid=value=>1/(1+Math.exp(-value));
+    const calculate=()=>{
+      const x1=Number(x1Input.value), x2=Number(x2Input.value);
+      const z1=.50*x1-.25*x2+.10, z2=.25*x1+.50*x2-.20;
+      const h1=sigmoid(z1), h2=sigmoid(z2);
+      $("rep-z1").textContent=z1.toFixed(6);
+      $("rep-h1").textContent=h1.toFixed(6);
+      $("rep-z2").textContent=z2.toFixed(6);
+      $("rep-h2").textContent=h2.toFixed(6);
+      $("rep-vector").textContent=`h = [${h1.toFixed(5)}, ${h2.toFixed(5)}]`;
+    };
+    [x1Input,x2Input].forEach(input=>input.addEventListener("input",calculate));
+    calculate();
   }
 
   function lab() {
