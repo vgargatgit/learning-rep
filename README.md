@@ -1,104 +1,35 @@
 # Learning Representations by Back-Propagating Errors
 
-An illustrated, calculation-first learning companion to:
+An illustrated, calculation-first learning companion to the 1986 paper by David E. Rumelhart, Geoffrey E. Hinton, and Ronald J. Williams.
 
-> David E. Rumelhart, Geoffrey E. Hinton, and Ronald J. Williams,  
-> **“Learning representations by back-propagating errors”**, *Nature* 323, 533–536 (1986).  
-> DOI: `10.1038/323533a0`
+## Website
 
-The project explains the paper with recurring cartoon characters, small numerical examples, executable code, and pedagogically correct terminology.
+The public GitHub Pages site is deployed at:
 
-> **Status:** Early learning-project scaffold. The generated illustrations are stored as **drafts** until every label, equation, arrow, and numerical result has passed the review checklist.
+`https://vgargatgit.github.io/learning-rep/`
 
-## Learning goals
+The reader includes six cartoon-led lessons, the canonical toy calculation, lesson progress, and an interactive backpropagation lab.
 
-After completing the project, a reader should be able to:
+## Access gate
 
-- explain why multilayer networks need a method for assigning responsibility for an output error;
-- distinguish a forward pass, loss calculation, backward pass, and parameter update;
-- derive gradients using the chain rule and local derivatives;
-- explain why backpropagation is an efficient reverse-mode differentiation procedure;
-- implement a tiny network and verify its gradients numerically;
-- explain what an internal representation is and how hidden units learn one;
-- connect the 1986 formulation to modern automatic differentiation and deep learning.
+The website uses a client-side credential gate. The submitted username and password are processed using browser-native PBKDF2-HMAC-SHA-256 with a random salt and 1,200,000 iterations. The result is compared with committed verifier bytes; the literal password is not stored in the website source.
 
-## Project map
+Because this is a **public repository and static GitHub Pages site**, the gate is an access prompt rather than true confidentiality. The lesson Markdown and illustrations are visible to anyone who browses the repository. Strong server-side access control requires a server or identity-aware proxy.
 
-```text
-.
-├── assets/drafts/       Generated visual drafts awaiting technical review
-├── docs/                Project charter, notation, pedagogy, and review rules
-├── examples/            Executable toy backpropagation calculations
-├── lessons/             The learning sequence in short, focused chapters
-├── site/                Lightweight illustrated web reader
-└── tests/               Numerical and finite-difference checks
-```
-
-## Start here
-
-1. Read [`docs/00-project-charter.md`](docs/00-project-charter.md).
-2. Follow [`docs/01-learning-path.md`](docs/01-learning-path.md).
-3. Run the canonical toy calculation:
+## Local preview
 
 ```bash
-python3 examples/toy_backprop.py
+python3 -m http.server 8000
 ```
 
-4. Run the tests:
+Open `http://localhost:8000/`.
+
+## Tests
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
 
-5. Open [`site/index.html`](site/index.html) in a browser to review the current illustrated sequence.
+## Copyright
 
-## Canonical toy example
-
-The first calculation deliberately uses one sigmoid neuron so every derivative fits on one page:
-
-```text
-x = [1, 2]
-w = [0.3, 0.7]
-b = 0.5
-y = 1
-
-z    = w₁x₁ + w₂x₂ + b = 2.2
-ŷ    = sigmoid(z)        ≈ 0.90024951
-L    = ½(ŷ - y)²         ≈ 0.00497508
-```
-
-The exact values printed by `examples/toy_backprop.py` are the source of truth for visual and written material.
-
-## Recurring characters
-
-- **Professor Neuron** — explains the formal idea and guards terminology.
-- **Input Trio** — supplies input features.
-- **Weight Wally** — represents learnable connection weights.
-- **Bias Bea** — represents the additive bias parameter.
-- **Loss Blob** — turns prediction error into a scalar objective.
-- **Gradient Messenger** — carries derivatives backwards through the computation graph.
-
-Characters are memory aids. They never replace the mathematical entities they represent.
-
-## Editorial principles
-
-- Simplify the example, not the terminology.
-- Label every quantity by both symbol and role.
-- Keep forward values separate from gradients.
-- Make the dependency graph visible before applying the chain rule.
-- Verify every displayed number from executable code.
-- Explain what the original paper established and what later terminology adds.
-
-## Copyright note
-
-This repository is an original educational companion. It does not include or reproduce the paper PDF. Consult the publisher or an authorised source for the original article.
-
-## Publish the prepared repository
-
-The repository is initialised locally with a `main` branch and initial commit. From its root on a machine with GitHub CLI installed:
-
-```bash
-./scripts/publish-to-github.sh
-```
-
-The script creates `vgargatgit/learning-representations-backprop-errors` as a private GitHub repository and pushes `main`. Change `--private` to `--public` only when the material is ready to publish.
+This repository is an original educational companion. It does not include or reproduce the paper PDF.
