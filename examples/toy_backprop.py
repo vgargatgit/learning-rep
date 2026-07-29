@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Canonical scalar backpropagation example used by the learning project.
+"""Canonical binary-classification backpropagation example.
 
 The implementation intentionally avoids ML frameworks so every intermediate
 quantity and derivative remains visible.
@@ -8,15 +8,25 @@ quantity and derivative remains visible.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from math import exp
+from math import exp, log1p
 from typing import Sequence
 
 
 @dataclass(frozen=True)
 class ForwardPass:
-    z: float
-    prediction: float
+    logit: float
+    probability: float
     loss: float
+
+    @property
+    def z(self) -> float:
+        """Backward-compatible name for the logit."""
+        return self.logit
+
+    @property
+    def prediction(self) -> float:
+        """Backward-compatible name for the class-1 probability."""
+        return self.probability
 
 
 @dataclass(frozen=True)
@@ -25,13 +35,20 @@ class Gradients:
     bias: float
 
 
-def sigmoid(z: float) -> float:
-    """Compute the logistic sigmoid with a stable branch for large magnitudes."""
-    if z >= 0:
-        negative_exp = exp(-z)
+def sigmoid(logit: float) -> float:
+    """Compute sigmoid stably."""
+    if logit >= 0:
+        negative_exp = exp(-logit)
         return 1.0 / (1.0 + negative_exp)
-    positive_exp = exp(z)
+    positive_exp = exp(logit)
     return positive_exp / (1.0 + positive_exp)
+
+
+def binary_cross_entropy_from_logit(logit: float, target: float) -> float:
+    """Compute binary cross-entropy without taking log(0)."""
+    if target not in (0.0, 1.0):
+        raise ValueError("binary target must be 0 or 1")
+    return max(logit, 0.0) - target * logit + log1p(exp(-abs(logit)))
 
 
 def forward(
@@ -40,28 +57,29 @@ def forward(
     bias: float,
     target: float,
 ) -> ForwardPass:
-    """Run a forward pass for one sigmoid neuron with half squared-error loss."""
+    """Run one binary-classification forward pass."""
     if len(inputs) != len(weights):
         raise ValueError("inputs and weights must have the same length")
 
-    z = sum(x * w for x, w in zip(inputs, weights, strict=True)) + bias
-    prediction = sigmoid(z)
-    loss = 0.5 * (prediction - target) ** 2
-    return ForwardPass(z=z, prediction=prediction, loss=loss)
+    logit = sum(x * w for x, w in zip(inputs, weights, strict=True)) + bias
+    probability = sigmoid(logit)
+    loss = binary_cross_entropy_from_logit(logit, target)
+    return ForwardPass(logit=logit, probability=probability, loss=loss)
 
 
 def backward(
     inputs: Sequence[float],
-    prediction: float,
+    probability: float,
     target: float,
 ) -> Gradients:
-    """Compute gradients by explicitly multiplying local derivatives."""
-    dloss_dprediction = prediction - target
-    dprediction_dz = prediction * (1.0 - prediction)
-    dloss_dz = dloss_dprediction * dprediction_dz
+    """Compute binary-classification gradients explicitly."""
+    if target not in (0.0, 1.0):
+        raise ValueError("binary target must be 0 or 1")
 
-    weight_gradients = tuple(dloss_dz * x for x in inputs)
-    return Gradients(weights=weight_gradients, bias=dloss_dz)
+    # Sigmoid plus binary cross-entropy simplifies to dL/dlogit = p - y.
+    loss_logit_gradient = probability - target
+    weight_gradients = tuple(loss_logit_gradient * x for x in inputs)
+    return Gradients(weights=weight_gradients, bias=loss_logit_gradient)
 
 
 def update(
@@ -92,26 +110,26 @@ def main() -> None:
     learning_rate = 0.1
 
     before = forward(inputs, weights, bias, target)
-    gradients = backward(inputs, before.prediction, target)
+    gradients = backward(inputs, before.probability, target)
     new_weights, new_bias = update(weights, bias, gradients, learning_rate)
     after = forward(inputs, new_weights, new_bias, target)
 
-    print("Canonical toy backpropagation calculation")
-    print("-" * 44)
-    print(f"inputs             = {inputs}")
-    print(f"weights            = {weights}")
-    print(f"bias               = {bias:.8f}")
-    print(f"pre-activation z   = {before.z:.8f}")
-    print(f"prediction y_hat   = {before.prediction:.8f}")
-    print(f"target y           = {target:.8f}")
-    print(f"loss               = {before.loss:.8f}")
-    print(f"weight gradients   = {gradients.weights}")
-    print(f"bias gradient      = {gradients.bias:.8f}")
-    print(f"new weights        = {new_weights}")
-    print(f"new bias           = {new_bias:.8f}")
-    print(f"new prediction     = {after.prediction:.8f}")
-    print(f"new loss           = {after.loss:.8f}")
-    print(f"loss decreased     = {after.loss < before.loss}")
+    print("Canonical binary-classification backpropagation calculation")
+    print("-" * 58)
+    print(f"inputs                    = {inputs}")
+    print(f"weights                   = {weights}")
+    print(f"bias                      = {bias:.8f}")
+    print(f"classification logit z    = {before.logit:.8f}")
+    print(f"class-1 probability p     = {before.probability:.8f}")
+    print(f"binary target y           = {target:.0f}")
+    print(f"binary cross-entropy loss = {before.loss:.8f}")
+    print(f"weight gradients          = {gradients.weights}")
+    print(f"bias gradient             = {gradients.bias:.8f}")
+    print(f"new weights               = {new_weights}")
+    print(f"new bias                  = {new_bias:.8f}")
+    print(f"new class-1 probability   = {after.probability:.8f}")
+    print(f"new BCE loss              = {after.loss:.8f}")
+    print(f"loss decreased            = {after.loss < before.loss}")
 
 
 if __name__ == "__main__":
