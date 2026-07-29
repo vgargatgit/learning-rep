@@ -1,0 +1,177 @@
+.classifier-architecture,
+.concept-figure {
+  margin: 1.35rem 0;
+}
+
+.classifier-architecture {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 15px 38px rgba(36, 29, 74, .10);
+}
+
+.classifier-architecture img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fff;
+}
+
+.classifier-architecture figcaption {
+  padding: .9rem 1.1rem 1rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1.55;
+}
+
+.classifier-architecture figcaption strong {
+  color: var(--ink);
+}
+
+.concept-figure {
+  overflow: hidden;
+}
+
+.concept-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 470px;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.concept-bg {
+  fill: #f8f6ff;
+  stroke: #d4ccec;
+  stroke-width: 2;
+}
+
+.concept-svg-flow .concept-bg { fill: #f1f7ff; stroke: #c5dcf4; }
+.concept-svg-shape .concept-bg { fill: #f3fbf8; stroke: #bfe2d8; }
+.concept-svg-classes .concept-bg { fill: #fff8e8; stroke: #ead293; }
+.concept-accent { fill: var(--purple); }
+.concept-svg-flow .concept-accent { fill: var(--blue); }
+.concept-svg-shape .concept-accent { fill: var(--teal); }
+.concept-svg-classes .concept-accent { fill: var(--gold); }
+
+.concept-divider {
+  stroke: #d8d3e8;
+  stroke-width: 1.5;
+}
+
+.concept-label {
+  fill: var(--purple);
+  font-size: 17px;
+  font-weight: 850;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+
+.concept-svg-flow .concept-label { fill: var(--blue); }
+.concept-svg-shape .concept-label { fill: var(--teal); }
+.concept-svg-classes .concept-label { fill: #9a6c00; }
+
+.concept-line {
+  fill: #253253;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 22px;
+  font-weight: 620;
+}
+
+.concept-phase {
+  fill: var(--purple);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.concept-arrow-line { fill: #224f82; }
+.concept-result { fill: #176b63; font-weight: 760; }
+
+.copy pre.runnable-code {
+  position: relative;
+  border: 1px solid #30385f;
+  box-shadow: 0 12px 30px rgba(17, 22, 55, .16);
+}
+
+.copy pre.runnable-code::before {
+  content: "RUNNABLE CODE";
+  display: block;
+  margin-bottom: .75rem;
+  color: #aebbf4;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: .68rem;
+  font-weight: 850;
+  letter-spacing: .12em;
+}
+
+@media (max-width: 650px) {
+  .concept-line { font-size: 20px; }
+  .concept-label { font-size: 15px; }
+  .classifier-architecture figcaption { font-size: .84rem; }
+}
+
+.beginner-glossary {
+  margin: 1.35rem 0;
+  padding: clamp(1rem, 3vw, 1.45rem);
+  border: 1px solid #cec7e6;
+  border-radius: 22px;
+  background: linear-gradient(135deg, #faf7ff, #f2f8ff);
+}
+
+.beginner-glossary-heading h3 {
+  margin: .25rem 0 .35rem;
+  color: var(--ink);
+}
+
+.beginner-glossary-heading p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.beginner-term-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin-top: 1rem;
+}
+
+.beginner-term {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: .7rem;
+  padding: .9rem;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: #fff;
+}
+
+.term-number {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--purple);
+  font-weight: 900;
+}
+
+.beginner-term strong {
+  color: var(--purple);
+}
+
+.beginner-term p {
+  margin: .28rem 0 0;
+  color: var(--muted);
+  font-size: .88rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .beginner-term-grid { grid-template-columns: 1fr; }
+}
