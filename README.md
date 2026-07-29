@@ -8,7 +8,23 @@ The public GitHub Pages site is deployed at:
 
 `https://vgargatgit.github.io/learning-rep/`
 
-The reader includes six cartoon-led lessons, the canonical toy calculation, lesson progress, and an interactive backpropagation lab.
+The reader now begins with **Part 1: Data becomes numbers**, covering examples, features, feature vectors, inputs, targets, and the first definition of a representation. It then continues through six cartoon-led backpropagation lessons and an interactive numerical lab.
+
+## Runnable Part 1 examples
+
+Plain Python:
+
+```bash
+python3 examples/part1_features.py
+```
+
+PyTorch:
+
+```bash
+python3 examples/part1_features_torch.py
+```
+
+The two examples deliberately represent the same house, feature vector, and target so readers can see how a Python list maps to a PyTorch tensor.
 
 ## Access gate
 
