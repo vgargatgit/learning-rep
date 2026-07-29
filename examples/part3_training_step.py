@@ -1,4 +1,4 @@
-"""Part 3: one explicit training step through a 2 -> 2 -> 1 network."""
+"""Part 3: binary classification through a dense 2 -> 2 -> 1 network."""
 
 from __future__ import annotations
 
@@ -43,6 +43,8 @@ def sigmoid(value: float) -> float:
 
 
 def binary_cross_entropy(prediction: float, target: float) -> float:
+    if target not in (0.0, 1.0):
+        raise ValueError("binary classification target must be 0 or 1")
     epsilon = 1e-12
     clipped = min(max(prediction, epsilon), 1.0 - epsilon)
     return -(target * log(clipped) + (1.0 - target) * log(1.0 - clipped))
@@ -60,12 +62,31 @@ def initial_model() -> Model:
 def forward(model: Model, inputs: Sequence[float], target: float) -> ForwardPass:
     if len(inputs) != 2:
         raise ValueError("this teaching example expects exactly two input features")
+    if target not in (0.0, 1.0):
+        raise ValueError("binary classification target must be 0 or 1")
+    if len(model.hidden_weights) != len(model.hidden_biases):
+        raise ValueError("one hidden bias is required for each hidden neuron")
+    if any(len(row) != len(inputs) for row in model.hidden_weights):
+        raise ValueError(
+            "every dense hidden neuron must receive the full previous representation"
+        )
+    if len(model.output_weights) != len(model.hidden_weights):
+        raise ValueError(
+            "the output neuron must receive the complete hidden representation"
+        )
 
+    # Each row is one hidden neuron; every row consumes all input coordinates.
     hidden_z = [
-        sum(weight * feature for weight, feature in zip(row, inputs, strict=True)) + bias
+        sum(weight * feature for weight, feature in zip(row, inputs, strict=True))
+        + bias
         for row, bias in zip(model.hidden_weights, model.hidden_biases, strict=True)
     ]
     hidden = [sigmoid(value) for value in hidden_z]
+
+    # One activation per hidden neuron: output representation dimension = layer size.
+    assert len(hidden) == len(model.hidden_weights)
+
+    # The binary output neuron consumes every hidden coordinate.
     logit = sum(
         weight * activation
         for weight, activation in zip(model.output_weights, hidden, strict=True)
@@ -110,6 +131,8 @@ def train_step(
             hidden_activation_gradients, before.hidden, strict=True
         )
     ]
+
+    # Every hidden neuron has one gradient for every input coordinate.
     hidden_weight_gradients = [
         [delta * feature for feature in inputs] for delta in hidden_deltas
     ]
@@ -139,13 +162,16 @@ def main() -> None:
         learning_rate=0.5,
     )
 
-    print("Hidden layers reshape the space; the output layer draws the line.")
+    print("Binary classification: hidden layers reshape; output draws the line.")
+    print("input dimension: 2")
+    print("hidden neurons / representation dimension: 2")
+    print("output logits: 1")
     print(f"hidden before: {result.before.hidden}")
-    print(f"prediction before: {result.before.prediction:.8f}")
-    print(f"loss before: {result.before.loss:.8f}")
+    print(f"class-1 probability before: {result.before.prediction:.8f}")
+    print(f"BCE loss before: {result.before.loss:.8f}")
     print(f"hidden after: {result.after.hidden}")
-    print(f"prediction after: {result.after.prediction:.8f}")
-    print(f"loss after: {result.after.loss:.8f}")
+    print(f"class-1 probability after: {result.after.prediction:.8f}")
+    print(f"BCE loss after: {result.after.loss:.8f}")
 
 
 if __name__ == "__main__":
