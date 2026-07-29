@@ -6,11 +6,15 @@ Generated illustrations are drafts until all checks pass.
 
 - [ ] Every symbol has one meaning throughout the page.
 - [ ] Forward-pass numbers match `examples/toy_backprop.py`.
-- [ ] Loss includes the same `½` convention used by the derivative.
-- [ ] Sigmoid derivative is evaluated using the unrounded prediction in canonical calculations.
+- [ ] The canonical task is binary classification with target `y ∈ {0, 1}`.
+- [ ] The canonical loss is binary cross-entropy, not squared error.
+- [ ] Sigmoid probability and predicted class are not conflated.
+- [ ] For sigmoid plus BCE, the displayed output delta is `p - y`.
 - [ ] Gradient signs are correct.
 - [ ] Bias gradient uses `∂z/∂b = 1`.
-- [ ] Updated parameters produce the displayed post-update prediction and loss.
+- [ ] Updated parameters produce the displayed post-update probability and loss.
+- [ ] A dense layer with `m` neurons displays an `m`-dimensional output representation.
+- [ ] Every dense neuron is shown receiving the complete previous representation.
 
 ## Conceptual checks
 
@@ -19,6 +23,7 @@ Generated illustrations are drafts until all checks pass.
 - [ ] Hidden units are described as learning representations, not predefined detectors unless explicitly marked as an analogy.
 - [ ] “Error” is not used ambiguously for loss, residual, and gradient.
 - [ ] The example architecture matches the equations on the same page.
+- [ ] The output line is described as a classifier operating on the representation, not as the representation itself.
 
 ## Visual checks
 
