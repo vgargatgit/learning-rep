@@ -1,4 +1,4 @@
-"""Tests for the canonical backpropagation example."""
+"""Tests for the canonical binary-classification example."""
 
 from __future__ import annotations
 
@@ -25,13 +25,13 @@ class ToyBackpropTest(unittest.TestCase):
 
     def test_forward_values(self) -> None:
         result = MODULE.forward(self.inputs, self.weights, self.bias, self.target)
-        self.assertAlmostEqual(result.z, 2.2, places=12)
-        self.assertAlmostEqual(result.prediction, 0.9002495108803148, places=12)
-        self.assertAlmostEqual(result.loss, 0.004975080039808218, places=12)
+        self.assertAlmostEqual(result.logit, 2.2, places=12)
+        self.assertAlmostEqual(result.probability, 0.9002495108803148, places=12)
+        self.assertAlmostEqual(result.loss, 0.10508331976869598, places=12)
 
     def test_analytical_gradient_matches_finite_difference(self) -> None:
         result = MODULE.forward(self.inputs, self.weights, self.bias, self.target)
-        gradients = MODULE.backward(self.inputs, result.prediction, self.target)
+        gradients = MODULE.backward(self.inputs, result.probability, self.target)
         epsilon = 1e-6
 
         for index, analytical in enumerate(gradients.weights):
@@ -51,14 +51,19 @@ class ToyBackpropTest(unittest.TestCase):
         ) / (2.0 * epsilon)
         self.assertAlmostEqual(gradients.bias, numerical_bias, places=8)
 
-    def test_gradient_descent_step_reduces_loss(self) -> None:
+    def test_gradient_descent_step_reduces_bce_loss(self) -> None:
         before = MODULE.forward(self.inputs, self.weights, self.bias, self.target)
-        gradients = MODULE.backward(self.inputs, before.prediction, self.target)
+        gradients = MODULE.backward(self.inputs, before.probability, self.target)
         new_weights, new_bias = MODULE.update(
             self.weights, self.bias, gradients, learning_rate=0.1
         )
         after = MODULE.forward(self.inputs, new_weights, new_bias, self.target)
         self.assertLess(after.loss, before.loss)
+        self.assertGreater(after.probability, before.probability)
+
+    def test_rejects_non_binary_target(self) -> None:
+        with self.assertRaises(ValueError):
+            MODULE.forward(self.inputs, self.weights, self.bias, target=0.4)
 
 
 if __name__ == "__main__":
