@@ -1,4 +1,4 @@
-name: Deploy learning site
+name: Deploy public learning-rep site
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v6
       - name: Configure Pages
         uses: actions/configure-pages@v5
-      - name: Upload site
+      - name: Upload repository as Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: .
