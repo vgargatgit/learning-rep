@@ -8,7 +8,12 @@ The public GitHub Pages site is deployed at:
 
 `https://vgargatgit.github.io/learning-rep/`
 
-The reader now begins with **Part 1: Data becomes numbers**, covering examples, features, feature vectors, inputs, targets, and the first definition of a representation. It then continues through six cartoon-led backpropagation lessons and an interactive numerical lab.
+The reader now begins with:
+
+- **Part 1: Data becomes numbers** — examples, features, feature vectors, inputs, targets, and the first definition of a representation.
+- **Part 2: Networks transform representations** — neuron computation, hidden units, hidden activation vectors, feature spaces, and why a useful hidden representation can simplify prediction.
+
+It then continues through six cartoon-led backpropagation lessons, an interactive representation explorer, and an interactive gradient lab.
 
 ## Runnable Part 1 examples
 
@@ -25,6 +30,22 @@ python3 examples/part1_features_torch.py
 ```
 
 The two examples deliberately represent the same house, feature vector, and target so readers can see how a Python list maps to a PyTorch tensor.
+
+## Runnable Part 2 examples
+
+Plain Python:
+
+```bash
+python3 examples/part2_hidden_representation.py
+```
+
+PyTorch:
+
+```bash
+python3 examples/part2_hidden_representation_torch.py
+```
+
+Both implementations use the same two-input, two-unit sigmoid hidden layer and produce the same hidden representation.
 
 ## Access gate
 
