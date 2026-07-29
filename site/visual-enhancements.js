@@ -25,7 +25,6 @@
       /^\s*(from|import|def|class|for|while|if|with|return|raise|assert)\b/m,
       /\b(torch|nn\.|optimizer\.|loss_function|print\(|\.backward\(|\.zero_grad\(|\.step\()/,
       /^\s*self\.[A-Za-z_]\w*\s*=/m,
-      /^\s*[A-Za-z_]\w*\s*=\s*(\[|\{|\(|torch\.|nn\.|["'])/m,
       /zip\(|range\(|append\(|tensor\(/
     ];
     return codeSignals.some(pattern => pattern.test(source));
